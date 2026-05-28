@@ -11,7 +11,7 @@ for (let i=0;i<extraLayerIds.length;i++){
     const pow = new Decimal(10).pow(3 + i) // requirements grow: 1e3, 1e4, ...
     addLayer(id, {
         name: id==="aa"? "alpha" : id==="bb"? "beta" : id==="cc"? "gamma" : id==="dd"? "delta" : id,
-        symbol: id.toUpperCase().replace(/AA|BB|CC|DD/,(m)=>m),
+        symbol: id.toUpperCase(),
         position: i+3,
         startData() { return {unlocked: false, points: new Decimal(0), auto: false}},
         color: colors[i % colors.length],
@@ -26,60 +26,37 @@ for (let i=0;i<extraLayerIds.length;i++){
         row: 3 + Math.floor(i/4),
         hotkeys: [ {key: id, description: id.toUpperCase()+": Reset for " + id + " points", onPress(){if (canReset(this.layer)) doReset(this.layer)}} ],
         upgrades: {
-            11: {
-                title: "Boost",
-                description: "Increase point gain by 10%.",
-                cost: new Decimal(5),
-                effect() { return new Decimal(1.1) },
-                unlocked() { return true }
-            },
-            12: {
-                title: "Strong Boost",
-                description: "Increase point gain by 50%.",
-                cost: new Decimal(25),
-                effect() { return new Decimal(1.5) },
-                unlocked() { return hasUpgrade(this.layer,11) }
-            }
-        ,
-            21: {
-                title: "Precision Boost",
-                description: "Further increase gain by 25%.",
-                cost: new Decimal(100),
-                unlocked() { return hasUpgrade(this.layer,12) }
-            }
+            11: {title: "Boost", description: "Increase point gain by 10%.", cost: new Decimal(5), unlocked() { return true }},
+            12: {title: "Strong Boost", description: "Increase gain by 50%.", cost: new Decimal(25), unlocked() { return hasUpgrade(this.layer,11) }},
+            21: {title: "Precision Boost", description: "Gain 25% more.", cost: new Decimal(100), unlocked() { return hasUpgrade(this.layer,12) }},
+            22: {title: "Automation Module", description: "Enable auto-prestige.", cost: new Decimal(250), unlocked() { return hasUpgrade(this.layer,21) }},
+            31: {title: "Passive Generation", description: "Passive gain of 0.5x.", cost: new Decimal(500), unlocked() { return hasUpgrade(this.layer,22) }},
+            32: {title: "Advanced Modules", description: "Unlock buyables.", cost: new Decimal(5000), unlocked() { return hasUpgrade(this.layer,31) }},
         },
         buyables: {
             11: {
-                title: "Passive Module",
-                cost(x=player[layerId].buyables[11]) { return new Decimal(5).times(Decimal.pow(2,x)) },
-                effect(x=player[layerId].buyables[11]) { return new Decimal(1).plus(x.times(0.1)) },
-                canAfford() { return canAffordPurchase(layerId, this, this.cost()) },
-                buy() { run(this.pay, this) },
-                pay() { player[layerId].buyables[11] = player[layerId].buyables[11].add(1); player[layerId].spentOnBuyables = player[layerId].spentOnBuyables.add(this.cost()) },
-                unlocked() { return true }
+                title: "Module",
+                cost(x=player[layerId].buyables[11]) { return new Decimal(10).times(Decimal.pow(2,x)) },
+                effect(x=player[layerId].buyables[11]) { return x.plus(1) },
+                display() { return "Cost: " + format(this.cost()) + "\\nAmount: " + format(player[layerId].buyables[11]) + "\\nEffect: +" + format(this.effect()) + "x" },
+                canAfford() { return player[layerId].points.gte(this.cost()) },
+                buy() { player[layerId].points = player[layerId].points.sub(this.cost()); player[layerId].buyables[11] = player[layerId].buyables[11].add(1) },
+                unlocked() { return hasUpgrade(layerId,32) }
             }
         },
         clickables: {
-            11: {
-                display() { return "Automation: " + (player[layerId].auto ? "ON" : "OFF") },
-                canClick() { return true },
-                onClick() { player[layerId].auto = !player[layerId].auto },
-                unlocked() { return true }
-            }
+            11: {display() { return "Automation: " + (player[layerId].auto ? "ON" : "OFF") }, canClick() { return true }, onClick() { player[layerId].auto = !player[layerId].auto }, unlocked() { return true }}
         },
-        passiveGeneration() { return hasUpgrade(layerId,11) ? tmp[layerId].buyables[11].times(1).plus(1) : (player[layerId].buyables[11] ? player[layerId].buyables[11].times(0.1) : new Decimal(0)) },
-        autoPrestige() { return hasUpgrade(layerId,12) || player[layerId].auto },
+        passiveGeneration() { return hasUpgrade(layerId,31) ? tmp[layerId].buyables[11].effect().times(0.5) : (player[layerId].buyables[11] ? player[layerId].buyables[11].times(0.1) : new Decimal(0)) },
+        autoPrestige() { return hasUpgrade(layerId,22) || player[layerId].auto },
         automate() {
             const L = layerId
             if (!player[L].unlocked) return
-            if (tmp[L].upgrades)
-                for (let u in tmp[L].upgrades)
-                    if (isPlainObject(tmp[L].upgrades[u]) && canAffordUpgrade(L,u) && !hasUpgrade(L,u)) buyUpg(L,u)
-            if (tmp[L].buyables)
-                for (let b in tmp[L].buyables)
-                    if (tmp[L].buyables[b].canBuy) buyBuyable(L,b)
-            if ((hasUpgrade(L,12) || player[L].auto) && tmp[L].canReset) doReset(L)
+            if (tmp[L].upgrades) for (let u in tmp[L].upgrades) if (isPlainObject(tmp[L].upgrades[u]) && canAffordUpgrade(L,u) && !hasUpgrade(L,u)) buyUpg(L,u)
+            if (tmp[L].buyables) for (let b in tmp[L].buyables) if (tmp[L].buyables[b].canBuy) buyBuyable(L,b)
+            if ((hasUpgrade(L,22) || player[L].auto) && tmp[L].canReset) doReset(L)
         },
+        tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["blank", "10px"], "upgrades", ["blank", "15px"], "buyables", ["blank", "15px"], "clickables"],
         layerShown(){ return true }
     })
 }

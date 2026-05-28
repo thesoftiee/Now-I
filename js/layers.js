@@ -77,23 +77,45 @@ addLayer("q", {
     upgrades: {
         11: {title: "Quantum Generator", description: "Generates quantum passively.", cost: new Decimal(5), unlocked() { return true }},
         12: {title: "Auto Quantum", description: "Automatically prestige quantum when possible.", cost: new Decimal(50), unlocked() { return hasUpgrade(this.layer,11) }},
-        21: {title: "Quantum Multiplier", description: "Increase quantum gain by 2x.", cost: new Decimal(100), unlocked() { return hasUpgrade(this.layer,12) }},
-        22: {title: "Quantum Automation Mastery", description: "Improves passive generation.", cost: new Decimal(500), unlocked() { return hasUpgrade(this.layer,21) }},
-        31: {title: "Quantum Accelerator", description: "3x quantum gain boost.", cost: new Decimal(1000), unlocked() { return hasUpgrade(this.layer,22) }},
+        13: {title: "Quantum Stabilizer", description: "Double passive generation.", cost: new Decimal(500), unlocked() { return hasUpgrade(this.layer,12) }},
+        21: {title: "Quantum Multiplier I", description: "Increase quantum gain by 2x.", cost: new Decimal(100), unlocked() { return hasUpgrade(this.layer,12) }},
+        22: {title: "Quantum Multiplier II", description: "Increase gain by 3x.", cost: new Decimal(500), unlocked() { return hasUpgrade(this.layer,21) }},
+        23: {title: "Quantum Amplifier", description: "Increase gain by 5x.", cost: new Decimal(5000), unlocked() { return hasUpgrade(this.layer,22) }},
+        31: {title: "Automation Mastery", description: "Improves passive generation.", cost: new Decimal(1000), unlocked() { return hasUpgrade(this.layer,23) }},
         32: {title: "Quantum Resonance", description: "Unlock buyables.", cost: new Decimal(5000), unlocked() { return hasUpgrade(this.layer,31) }},
         41: {title: "Quantum Supremacy", description: "5x gain multiplier.", cost: new Decimal(50000), unlocked() { return hasUpgrade(this.layer,32) }},
         42: {title: "Quantum Nexus", description: "Advanced buyables.", cost: new Decimal(500000), unlocked() { return hasUpgrade(this.layer,41) }},
+        51: {title: "Quantum Singularity", description: "10x gain.", cost: new Decimal(5000000), unlocked() { return hasUpgrade(this.layer,42) }},
+        52: {title: "Quantum Infinity", description: "Unlock infinite buyables.", cost: new Decimal(50000000), unlocked() { return hasUpgrade(this.layer,51) }},
     },
     buyables: {
         11: {
-            title: "Quantum Module",
+            title: "Quantum Module I",
             cost(x=player.q.buyables[11]) { return new Decimal(10).times(Decimal.pow(2,x)) },
             effect(x=player.q.buyables[11]) { return x.plus(1) },
             display() { return "Cost: " + format(this.cost()) + "\\nAmount: " + format(player.q.buyables[11]) + "\\nEffect: +" + format(this.effect()) + "x" },
             canAfford() { return player.q.points.gte(this.cost()) },
             buy() { player.q.points = player.q.points.sub(this.cost()); player.q.buyables[11] = player.q.buyables[11].add(1) },
             unlocked() { return hasUpgrade("q",32) }
-        }
+        },
+        12: {
+            title: "Quantum Module II",
+            cost(x=player.q.buyables[12]) { return new Decimal(100).times(Decimal.pow(3,x)) },
+            effect(x=player.q.buyables[12]) { return x.times(2).plus(1) },
+            display() { return "Cost: " + format(this.cost()) + "\\nAmount: " + format(player.q.buyables[12]) + "\\nEffect: x" + format(this.effect()) },
+            canAfford() { return player.q.points.gte(this.cost()) },
+            buy() { player.q.points = player.q.points.sub(this.cost()); player.q.buyables[12] = player.q.buyables[12].add(1) },
+            unlocked() { return hasUpgrade("q",42) }
+        },
+        13: {
+            title: "Quantum Module III",
+            cost(x=player.q.buyables[13]) { return new Decimal(1000).times(Decimal.pow(4,x)) },
+            effect(x=player.q.buyables[13]) { return x.times(5) },
+            display() { return "Cost: " + format(this.cost()) + "\\nAmount: " + format(player.q.buyables[13]) + "\\nEffect: x" + format(this.effect()) },
+            canAfford() { return player.q.points.gte(this.cost()) },
+            buy() { player.q.points = player.q.points.sub(this.cost()); player.q.buyables[13] = player.q.buyables[13].add(1) },
+            unlocked() { return hasUpgrade("q",52) }
+        },
     },
     clickables: {
         11: {display() { return "Automation: " + (player.q.auto ? "ON" : "OFF") }, canClick() { return true }, onClick() { player.q.auto = !player.q.auto }, unlocked() { return true }}
@@ -102,11 +124,14 @@ addLayer("q", {
         0: {requirementDescription: "5 Quantum Points", done() {return player.q.best.gte(5)}, effectDescription: "Unlock first tier upgrades"},
         1: {requirementDescription: "50 Quantum Points", done() {return player.q.best.gte(50)}, effectDescription: "Quantum generation increased", unlocked() {return hasMilestone("q", 0)}},
         2: {requirementDescription: "500 Quantum Points", done() {return player.q.best.gte(500)}, effectDescription: "Unlock advanced upgrades", unlocked() {return hasMilestone("q", 1)}},
+        3: {requirementDescription: "100,000 Quantum Points", done() {return player.q.best.gte(100000)}, effectDescription: "Ultimate power boost", unlocked() {return hasMilestone("q", 2)}},
     },
     achievements: {
         11: {name: "Quantum Leap", done() {return player.q.best.gte(1)}, goalTooltip: "Gain 1 quantum point", doneTooltip: "Welcome to the quantum realm!"},
         12: {name: "Auto Quantum Master", done() {return hasUpgrade("q", 12)}, goalTooltip: "Buy the auto-prestige upgrade", doneTooltip: "Automation unlocked!"},
         21: {name: "Quantum Rich", done() {return player.q.best.gte(10000)}, goalTooltip: "Reach 10,000 quantum points", doneTooltip: "You're wealthy!"},
+        22: {name: "Quantum Supremacy", done() {return hasUpgrade("q", 41)}, goalTooltip: "Buy Quantum Supremacy", doneTooltip: "Ultimate power achieved!"},
+        31: {name: "Quantum Infinity", done() {return hasUpgrade("q", 52)}, goalTooltip: "Buy Quantum Infinity", doneTooltip: "Infinite possibilities!"},
     },
     challenges: {
         11: {
@@ -117,6 +142,15 @@ addLayer("q", {
             goalDescription: 'Have 100 quantum points while in this challenge',
             canComplete() { return player.q.points.gte(100) },
             rewardDescription: "Unlock advanced upgrades",
+        },
+        12: {
+            name: "No Buyables",
+            completionLimit: 1,
+            challengeDescription() {return "No buyables allowed!" + (hasChallengeCompletions("q", this.id) >= this.completionLimit ? " (Completed)" : "")},
+            unlocked() { return player.q.best.gte(500) },
+            goalDescription: 'Reach 10,000 quantum points without buyables',
+            canComplete() { return player.q.points.gte(10000) },
+            rewardDescription: "+50% to all gains",
         },
     },
     bars: {
@@ -136,7 +170,22 @@ addLayer("q", {
             bodyStyle: {"color": "#FFF"}
         }
     },
-    passiveGeneration() { return hasUpgrade("q",11) ? (hasUpgrade("q",22) ? 1 : 0.5) : 0 },
+    nodeStyle() { 
+        return {
+            "background-color": "#7B2CF6",
+            "border-radius": "5px",
+            "box-shadow": "0 0 15px #7B2CF6"
+        }
+    },
+    glowColor: "#7B2CF6",
+    passiveGeneration() { 
+        let gen = new Decimal(0)
+        if (hasUpgrade("q",11)) gen = gen.plus(0.5)
+        if (hasUpgrade("q",13)) gen = gen.times(2)
+        if (hasUpgrade("q",31)) gen = gen.times(1.5)
+        if (player.q.buyables[11]) gen = gen.times(player.q.buyables[11].plus(1))
+        return gen 
+    },
     autoPrestige() { return hasUpgrade("q",12) || player.q.auto },
     automate() {
         const L = "q"
@@ -144,7 +193,7 @@ addLayer("q", {
         if (tmp[L].upgrades) for (let u in tmp[L].upgrades) if (isPlainObject(tmp[L].upgrades[u]) && canAffordUpgrade(L,u) && !hasUpgrade(L,u)) buyUpg(L,u)
         if (tmp[L].buyables) for (let b in tmp[L].buyables) if (tmp[L].buyables[b].canBuy) buyBuyable(L,b)
     },
-    tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["bar", "quantum"], ["blank", "10px"], "upgrades", ["blank", "15px"], "buyables", ["blank", "15px"], ["display-text", "Milestones:"], "milestones", ["blank", "15px"], ["infobox", "main"], ["blank", "15px"], "challenges", ["blank", "15px"], "clickables"],
+    tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["bar", "quantum"], ["blank", "10px"], ["display-text", "function() { return '<b>Upgrades:</b>' }"], "upgrades", ["blank", "15px"], ["display-text", "function() { return '<b>Modules:</b>' }"], "buyables", ["blank", "15px"], ["display-text", "function() { return '<b>Milestones & Achievements:</b>' }"], ["row", ["milestones", "achievements"]], ["blank", "15px"], ["display-text", "function() { return '<b>Challenges:</b>' }"], "challenges", ["blank", "15px"], ["infobox", "main"], ["blank", "15px"], "clickables"],
     layerShown(){return true}
 })
 
@@ -167,21 +216,34 @@ addLayer("r", {
     upgrades: {
         11: {title: "Reality Generator", description: "Generates reality passively.", cost: new Decimal(25), unlocked() { return true }},
         12: {title: "Auto Reality", description: "Automatically prestige reality when possible.", cost: new Decimal(200), unlocked() { return hasUpgrade(this.layer,11) }},
-        21: {title: "Reality Multiplier", description: "Increase reality gain by 2x.", cost: new Decimal(1000), unlocked() { return hasUpgrade(this.layer,12) }},
-        22: {title: "Reality Mastery", description: "Double passive generation.", cost: new Decimal(10000), unlocked() { return hasUpgrade(this.layer,21) }},
-        31: {title: "Reality Supremacy", description: "3x gain boost.", cost: new Decimal(100000), unlocked() { return hasUpgrade(this.layer,22) }},
+        13: {title: "Reality Stabilizer", description: "Double passive generation.", cost: new Decimal(2000), unlocked() { return hasUpgrade(this.layer,12) }},
+        21: {title: "Reality Multiplier I", description: "Increase reality gain by 2x.", cost: new Decimal(1000), unlocked() { return hasUpgrade(this.layer,12) }},
+        22: {title: "Reality Multiplier II", description: "Increase gain by 3x.", cost: new Decimal(10000), unlocked() { return hasUpgrade(this.layer,21) }},
+        23: {title: "Reality Amplifier", description: "Increase gain by 5x.", cost: new Decimal(100000), unlocked() { return hasUpgrade(this.layer,22) }},
+        31: {title: "Mastery", description: "Improves passive generation.", cost: new Decimal(10000), unlocked() { return hasUpgrade(this.layer,23) }},
         32: {title: "Reality Nexus", description: "Unlock advanced buyables.", cost: new Decimal(1000000), unlocked() { return hasUpgrade(this.layer,31) }},
+        41: {title: "Reality Supremacy", description: "3x gain multiplier.", cost: new Decimal(100000000), unlocked() { return hasUpgrade(this.layer,32) }},
+        42: {title: "Reality Infinity", description: "Unlock infinite buyables.", cost: new Decimal(10000000000), unlocked() { return hasUpgrade(this.layer,41) }},
     },
     buyables: {
         11: {
-            title: "Reality Module",
+            title: "Reality Module I",
             cost(x=player.r.buyables[11]) { return new Decimal(100).times(Decimal.pow(3,x)) },
             effect(x=player.r.buyables[11]) { return x.plus(1).times(2) },
             display() { return "Cost: " + format(this.cost()) + "\\nAmount: " + format(player.r.buyables[11]) + "\\nEffect: x" + format(this.effect()) },
             canAfford() { return player.r.points.gte(this.cost()) },
             buy() { player.r.points = player.r.points.sub(this.cost()); player.r.buyables[11] = player.r.buyables[11].add(1) },
             unlocked() { return hasUpgrade("r",32) }
-        }
+        },
+        12: {
+            title: "Reality Module II",
+            cost(x=player.r.buyables[12]) { return new Decimal(1000).times(Decimal.pow(4,x)) },
+            effect(x=player.r.buyables[12]) { return x.times(3).plus(1) },
+            display() { return "Cost: " + format(this.cost()) + "\\nAmount: " + format(player.r.buyables[12]) + "\\nEffect: x" + format(this.effect()) },
+            canAfford() { return player.r.points.gte(this.cost()) },
+            buy() { player.r.points = player.r.points.sub(this.cost()); player.r.buyables[12] = player.r.buyables[12].add(1) },
+            unlocked() { return hasUpgrade("r",42) }
+        },
     },
     clickables: {
         11: {display() { return "Automation: " + (player.r.auto ? "ON" : "OFF") }, canClick() { return true }, onClick() { player.r.auto = !player.r.auto }, unlocked() { return true }}
@@ -190,11 +252,13 @@ addLayer("r", {
         0: {requirementDescription: "10 Reality Points", done() {return player.r.best.gte(10)}, effectDescription: "Unlock milestone tier 1"},
         1: {requirementDescription: "100 Reality Points", done() {return player.r.best.gte(100)}, effectDescription: "Reality generation increased", unlocked() {return hasMilestone("r", 0)}},
         2: {requirementDescription: "1,000 Reality Points", done() {return player.r.best.gte(1000)}, effectDescription: "Unlock higher tier upgrades", unlocked() {return hasMilestone("r", 1)}},
+        3: {requirementDescription: "1,000,000 Reality Points", done() {return player.r.best.gte(1000000)}, effectDescription: "Ultimate reality power", unlocked() {return hasMilestone("r", 2)}},
     },
     achievements: {
         11: {name: "Reality Check", done() {return player.r.best.gte(1)}, goalTooltip: "Gain 1 reality point", doneTooltip: "Reality is what you make it!"},
-        12: {name: "Master of Reality", done() {return hasUpgrade("r", 21)}, goalTooltip: "Buy the Reality Multiplier", doneTooltip: "Your power grows!"},
+        12: {name: "Master of Reality", done() {return hasUpgrade("r", 23)}, goalTooltip: "Buy the Reality Amplifier", doneTooltip: "Your power grows!"},
         21: {name: "Ultimate Reality", done() {return player.r.best.gte(100000)}, goalTooltip: "Reach 100,000 reality points", doneTooltip: "You've conquered reality!"},
+        22: {name: "Reality Supremacy", done() {return hasUpgrade("r", 41)}, goalTooltip: "Buy Reality Supremacy", doneTooltip: "Absolute power!"},
     },
     challenges: {
         11: {
@@ -202,9 +266,18 @@ addLayer("r", {
             completionLimit: 1,
             challengeDescription() {return "No automation allowed" + (hasChallengeCompletions("r", this.id) >= this.completionLimit ? " (Completed)" : "")},
             unlocked() { return player.r.best.gte(50) },
-            goalDescription: 'Manually achieve 500 reality points in this challenge',
+            goalDescription: 'Reach 500 reality points',
             canComplete() { return player.r.points.gte(500) },
             rewardDescription: "Unlock new buyables",
+        },
+        12: {
+            name: "No Upgrades",
+            completionLimit: 1,
+            challengeDescription() {return "No upgrades allowed!" + (hasChallengeCompletions("r", this.id) >= this.completionLimit ? " (Completed)" : "")},
+            unlocked() { return player.r.best.gte(1000) },
+            goalDescription: 'Reach 50,000 reality points without upgrades',
+            canComplete() { return player.r.points.gte(50000) },
+            rewardDescription: "Massive passive boost",
         },
     },
     bars: {
@@ -224,7 +297,22 @@ addLayer("r", {
             bodyStyle: {"color": "#FFF"}
         }
     },
-    passiveGeneration() { return hasUpgrade("r",11) ? (hasUpgrade("r",22) ? 0.6 : 0.25) : 0 },
+    nodeStyle() { 
+        return {
+            "background-color": "#FF7A00",
+            "border-radius": "5px",
+            "box-shadow": "0 0 15px #FF7A00"
+        }
+    },
+    glowColor: "#FF7A00",
+    passiveGeneration() { 
+        let gen = new Decimal(0)
+        if (hasUpgrade("r",11)) gen = gen.plus(0.25)
+        if (hasUpgrade("r",13)) gen = gen.times(2)
+        if (hasUpgrade("r",31)) gen = gen.times(1.5)
+        if (player.r.buyables[11]) gen = gen.times(player.r.buyables[11].plus(1))
+        return gen 
+    },
     autoPrestige() { return hasUpgrade("r",12) || player.r.auto },
     automate() {
         const L = "r"
@@ -232,6 +320,6 @@ addLayer("r", {
         if (tmp[L].upgrades) for (let u in tmp[L].upgrades) if (isPlainObject(tmp[L].upgrades[u]) && canAffordUpgrade(L,u) && !hasUpgrade(L,u)) buyUpg(L,u)
         if (tmp[L].buyables) for (let b in tmp[L].buyables) if (tmp[L].buyables[b].canBuy) buyBuyable(L,b)
     },
-    tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["bar", "reality"], ["blank", "10px"], "upgrades", ["blank", "15px"], "buyables", ["blank", "15px"], ["display-text", "Milestones:"], "milestones", ["blank", "15px"], ["infobox", "main"], ["blank", "15px"], "challenges", ["blank", "15px"], "clickables"],
+    tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["bar", "reality"], ["blank", "10px"], ["display-text", "function() { return '<b>Upgrades:</b>' }"], "upgrades", ["blank", "15px"], ["display-text", "function() { return '<b>Modules:</b>' }"], "buyables", ["blank", "15px"], ["display-text", "function() { return '<b>Milestones & Achievements:</b>' }"], ["row", ["milestones", "achievements"]], ["blank", "15px"], ["display-text", "function() { return '<b>Challenges:</b>' }"], "challenges", ["blank", "15px"], ["infobox", "main"], ["blank", "15px"], "clickables"],
     layerShown(){return true}
 })

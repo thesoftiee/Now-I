@@ -47,6 +47,42 @@ for (let i=0;i<extraLayerIds.length;i++){
         clickables: {
             11: {display() { return "Automation: " + (player[layerId].auto ? "ON" : "OFF") }, canClick() { return true }, onClick() { player[layerId].auto = !player[layerId].auto }, unlocked() { return true }}
         },
+        milestones: {
+            0: {requirementDescription: "100 " + id + " points", done() {return player[layerId].best.gte(100)}, effectDescription: "Unlock tier 1 upgrades"},
+            1: {requirementDescription: "1,000 " + id + " points", done() {return player[layerId].best.gte(1000)}, effectDescription: "Generation doubled", unlocked() {return hasMilestone(layerId, 0)}},
+        },
+        achievements: {
+            11: {name: "Welcome to " + id, done() {return player[layerId].best.gte(1)}, goalTooltip: "Gain 1 " + id + " point", doneTooltip: "New layer unlocked!"},
+            12: {name: id + " Enthusiast", done() {return hasUpgrade(layerId, 22)}, goalTooltip: "Buy the Automation Module", doneTooltip: "Automation engaged!"},
+        },
+        challenges: {
+            11: {
+                name: "No Buyables",
+                completionLimit: 1,
+                challengeDescription() {return "Gain points without buyables" + (hasChallengeCompletions(layerId, this.id) >= this.completionLimit ? " (Done)" : "")},
+                unlocked() { return player[layerId].best.gte(500) },
+                goalDescription: 'Reach 5,000 ' + id + ' points',
+                canComplete() { return player[layerId].points.gte(5000) },
+                rewardDescription: "Milestone bonus",
+            },
+        },
+        bars: {
+            progress: {
+                direction: RIGHT,
+                width: 300,
+                height: 25,
+                progress() { return player[layerId].points.log(10).div(10) },
+                fillStyle: {"background-color": colors[i % colors.length]},
+                display() { return format(player[layerId].points) }
+            }
+        },
+        infoboxes: {
+            main: {
+                title: id.toUpperCase() + " Layer",
+                body: "Progress through " + id + " and unlock new challenges and upgrades.",
+                bodyStyle: {"color": "#FFF"}
+            }
+        },
         passiveGeneration() { return hasUpgrade(layerId,31) ? tmp[layerId].buyables[11].effect().times(0.5) : (player[layerId].buyables[11] ? player[layerId].buyables[11].times(0.1) : new Decimal(0)) },
         autoPrestige() { return hasUpgrade(layerId,22) || player[layerId].auto },
         automate() {
@@ -56,7 +92,7 @@ for (let i=0;i<extraLayerIds.length;i++){
             if (tmp[L].buyables) for (let b in tmp[L].buyables) if (tmp[L].buyables[b].canBuy) buyBuyable(L,b)
             if ((hasUpgrade(L,22) || player[L].auto) && tmp[L].canReset) doReset(L)
         },
-        tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["blank", "10px"], "upgrades", ["blank", "15px"], "buyables", ["blank", "15px"], "clickables"],
+        tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["bar", "progress"], ["blank", "10px"], "upgrades", ["blank", "15px"], "buyables", ["blank", "15px"], ["display-text", "Milestones:"], "milestones", ["blank", "15px"], ["infobox", "main"], ["blank", "15px"], "challenges", ["blank", "15px"], "achievements", ["blank", "15px"], "clickables"],
         layerShown(){ return true }
     })
 }

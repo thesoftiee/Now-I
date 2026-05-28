@@ -28,7 +28,33 @@ addLayer("p", {
         11: {title: "Productivity", description: "Double point generation", cost: new Decimal(1), unlocked() { return true }},
         12: {title: "Efficiency", description: "Double again", cost: new Decimal(10), unlocked() { return hasUpgrade("p",11) }},
     },
-    tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["blank", "10px"], "upgrades"],
+    milestones: {
+        0: {requirementDescription: "100 Points", done() {return player.points.gte(100)}, effectDescription: "Unlock prestige upgrades"},
+        1: {requirementDescription: "10,000 Points", done() {return player.points.gte(10000)}, effectDescription: "You can prestige twice as fast", unlocked() {return hasMilestone("p", 0)}},
+    },
+    achievements: {
+        11: {name: "First Steps", done() {return player.p.best.gte(1)}, goalTooltip: "Gain 1 prestige point", doneTooltip: "Welcome to prestige!"},
+        12: {name: "Point Collector", done() {return player.points.gte(1000)}, goalTooltip: "Collect 1000 points", doneTooltip: "You're on your way!"},
+    },
+    bars: {
+        progressBar: {
+            direction: RIGHT,
+            width: 300,
+            height: 30,
+            progress() { return player.points.log(10).div(9) },
+            fillStyle: {"background-color": "#4BDC13"},
+            textStyle: {"color": "#000"},
+            display() { return format(player.points) + " / 1e9"}
+        }
+    },
+    infoboxes: {
+        lore: {
+            title: "Points",
+            body: "Gain points by clicking or passively. Prestige to reset and gain prestige points which multiply point generation.",
+            bodyStyle: {"color": "#FFF"}
+        }
+    },
+    tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["blank", "10px"], "upgrades", ["blank", "15px"], ["display-text", "Milestones:"], "milestones", ["blank", "15px"], ["infobox", "lore"]],
     layerShown(){return true}
 })
 
@@ -72,6 +98,44 @@ addLayer("q", {
     clickables: {
         11: {display() { return "Automation: " + (player.q.auto ? "ON" : "OFF") }, canClick() { return true }, onClick() { player.q.auto = !player.q.auto }, unlocked() { return true }}
     },
+    milestones: {
+        0: {requirementDescription: "5 Quantum Points", done() {return player.q.best.gte(5)}, effectDescription: "Unlock first tier upgrades"},
+        1: {requirementDescription: "50 Quantum Points", done() {return player.q.best.gte(50)}, effectDescription: "Quantum generation increased", unlocked() {return hasMilestone("q", 0)}},
+        2: {requirementDescription: "500 Quantum Points", done() {return player.q.best.gte(500)}, effectDescription: "Unlock advanced upgrades", unlocked() {return hasMilestone("q", 1)}},
+    },
+    achievements: {
+        11: {name: "Quantum Leap", done() {return player.q.best.gte(1)}, goalTooltip: "Gain 1 quantum point", doneTooltip: "Welcome to the quantum realm!"},
+        12: {name: "Auto Quantum Master", done() {return hasUpgrade("q", 12)}, goalTooltip: "Buy the auto-prestige upgrade", doneTooltip: "Automation unlocked!"},
+        21: {name: "Quantum Rich", done() {return player.q.best.gte(10000)}, goalTooltip: "Reach 10,000 quantum points", doneTooltip: "You're wealthy!"},
+    },
+    challenges: {
+        11: {
+            name: "Quantum Silence",
+            completionLimit: 1,
+            challengeDescription() {return "Gain quantum points without passive generation" + (hasChallengeCompletions("q", this.id) >= this.completionLimit ? " (Completed)" : "")},
+            unlocked() { return player.q.best.gte(10) },
+            goalDescription: 'Have 100 quantum points while in this challenge',
+            canComplete() { return player.q.points.gte(100) },
+            rewardDescription: "Unlock advanced upgrades",
+        },
+    },
+    bars: {
+        quantum: {
+            direction: RIGHT,
+            width: 300,
+            height: 25,
+            progress() { return player.q.points.log(10).div(8) },
+            fillStyle: {"background-color": "#7B2CF6"},
+            display() { return format(player.q.points) }
+        }
+    },
+    infoboxes: {
+        main: {
+            title: "Quantum Layer",
+            body: "Quantum points multiply your point generation. Build up quantum and unlock advanced tiers!",
+            bodyStyle: {"color": "#FFF"}
+        }
+    },
     passiveGeneration() { return hasUpgrade("q",11) ? (hasUpgrade("q",22) ? 1 : 0.5) : 0 },
     autoPrestige() { return hasUpgrade("q",12) || player.q.auto },
     automate() {
@@ -80,7 +144,7 @@ addLayer("q", {
         if (tmp[L].upgrades) for (let u in tmp[L].upgrades) if (isPlainObject(tmp[L].upgrades[u]) && canAffordUpgrade(L,u) && !hasUpgrade(L,u)) buyUpg(L,u)
         if (tmp[L].buyables) for (let b in tmp[L].buyables) if (tmp[L].buyables[b].canBuy) buyBuyable(L,b)
     },
-    tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["blank", "10px"], "upgrades", ["blank", "15px"], "buyables", ["blank", "15px"], "clickables"],
+    tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["bar", "quantum"], ["blank", "10px"], "upgrades", ["blank", "15px"], "buyables", ["blank", "15px"], ["display-text", "Milestones:"], "milestones", ["blank", "15px"], ["infobox", "main"], ["blank", "15px"], "challenges", ["blank", "15px"], "clickables"],
     layerShown(){return true}
 })
 
@@ -122,6 +186,44 @@ addLayer("r", {
     clickables: {
         11: {display() { return "Automation: " + (player.r.auto ? "ON" : "OFF") }, canClick() { return true }, onClick() { player.r.auto = !player.r.auto }, unlocked() { return true }}
     },
+    milestones: {
+        0: {requirementDescription: "10 Reality Points", done() {return player.r.best.gte(10)}, effectDescription: "Unlock milestone tier 1"},
+        1: {requirementDescription: "100 Reality Points", done() {return player.r.best.gte(100)}, effectDescription: "Reality generation increased", unlocked() {return hasMilestone("r", 0)}},
+        2: {requirementDescription: "1,000 Reality Points", done() {return player.r.best.gte(1000)}, effectDescription: "Unlock higher tier upgrades", unlocked() {return hasMilestone("r", 1)}},
+    },
+    achievements: {
+        11: {name: "Reality Check", done() {return player.r.best.gte(1)}, goalTooltip: "Gain 1 reality point", doneTooltip: "Reality is what you make it!"},
+        12: {name: "Master of Reality", done() {return hasUpgrade("r", 21)}, goalTooltip: "Buy the Reality Multiplier", doneTooltip: "Your power grows!"},
+        21: {name: "Ultimate Reality", done() {return player.r.best.gte(100000)}, goalTooltip: "Reach 100,000 reality points", doneTooltip: "You've conquered reality!"},
+    },
+    challenges: {
+        11: {
+            name: "Reality Bound",
+            completionLimit: 1,
+            challengeDescription() {return "No automation allowed" + (hasChallengeCompletions("r", this.id) >= this.completionLimit ? " (Completed)" : "")},
+            unlocked() { return player.r.best.gte(50) },
+            goalDescription: 'Manually achieve 500 reality points in this challenge',
+            canComplete() { return player.r.points.gte(500) },
+            rewardDescription: "Unlock new buyables",
+        },
+    },
+    bars: {
+        reality: {
+            direction: RIGHT,
+            width: 300,
+            height: 25,
+            progress() { return player.r.points.log(10).div(7) },
+            fillStyle: {"background-color": "#FF7A00"},
+            display() { return format(player.r.points) }
+        }
+    },
+    infoboxes: {
+        main: {
+            title: "Reality Layer",
+            body: "Reality points are the ultimate multiplier. Harness their power to reshape existence itself!",
+            bodyStyle: {"color": "#FFF"}
+        }
+    },
     passiveGeneration() { return hasUpgrade("r",11) ? (hasUpgrade("r",22) ? 0.6 : 0.25) : 0 },
     autoPrestige() { return hasUpgrade("r",12) || player.r.auto },
     automate() {
@@ -130,6 +232,6 @@ addLayer("r", {
         if (tmp[L].upgrades) for (let u in tmp[L].upgrades) if (isPlainObject(tmp[L].upgrades[u]) && canAffordUpgrade(L,u) && !hasUpgrade(L,u)) buyUpg(L,u)
         if (tmp[L].buyables) for (let b in tmp[L].buyables) if (tmp[L].buyables[b].canBuy) buyBuyable(L,b)
     },
-    tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["blank", "10px"], "upgrades", ["blank", "15px"], "buyables", ["blank", "15px"], "clickables"],
+    tabFormat: [["main-display"], ["prestige-button"], ["resource-display"], ["bar", "reality"], ["blank", "10px"], "upgrades", ["blank", "15px"], "buyables", ["blank", "15px"], ["display-text", "Milestones:"], "milestones", ["blank", "15px"], ["infobox", "main"], ["blank", "15px"], "challenges", ["blank", "15px"], "clickables"],
     layerShown(){return true}
 })
